@@ -6,10 +6,13 @@ services:
       context: dockerfiles/
       args:
         REDIS_VERSION: ${REDIS_VERSION}
-    command: /run.sh --logfile /opt/bitnami/redis/logs/redis.log
+    # TODO:     command: /run.sh --logfile /opt/bitnami/redis/logs/redis.log --appendonly yes --save "" --appendfsync no
+    command: /run.sh
     volumes:
-      - ./redis/config/:/
-      - ./logs/:/
+      # TODO: bitnami data, log, and config path can dynamic from bitmami env
+      - "./redis/log/redis_1/:/opt/bitnami/redis/logs"
+      - "./redis/data/redis_1/:/opt/bitnami/redis/data"
+      - "./redis/config/redis.conf:/opt/bitnami/redis/mounted-etc/redis.conf:ro"
     ports:
       - "6380:6379"
     networks:
@@ -17,9 +20,16 @@ services:
     environment:
       # ALLOW_EMPTY_PASSWORD is recommended only for development
       - ALLOW_EMPTY_PASSWORD=yes
+      # TZ Config ?
       - TZ=Asia/Ho_Chi_Minh
     restart: unless-stopped
 
+# Network config static ip, can dynamic ip by remove ipam.
 networks:
   redis-sentinel:
     driver: bridge
+    name: redis-sentinel
+    ipam:
+      config:
+        - subnet: 172.30.0.0/1
+          gateway: 172.30.0.1
