@@ -26,6 +26,10 @@ In this project, i primarily leverage Docker Image from Bitnami. Here's why:
 
 * _copy from Bitnami docs :))_
 
+Utilizing Bitnami Docker images may introduce certain differences compared to employing official images.
+Nonetheless, as outlined in the philosophy, my primary focus lies in facilitating rapid application deployment.
+If you prefer using different images, feel free to clone this repository and customize it as per your requirements.
+
 ## Usage
 
 Updating ...

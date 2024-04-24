@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  redis_mater_1:
+    build:
+      context: dockerfiles/
+      args:
+        REDIS_VERSION: ${REDIS_VERSION}
+    command: /run.sh --logfile /opt/bitnami/redis/logs/redis.log
+    volumes:
+      - ./redis/config/:/
+      - ./logs/:/
+    ports:
+      - "6380:6379"
+    networks:
+      - redis-sentinel
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development
+      - ALLOW_EMPTY_PASSWORD=yes
+      - TZ=Asia/Ho_Chi_Minh
+    restart: unless-stopped
+
+networks:
+  redis-sentinel:
+    driver: bridge
