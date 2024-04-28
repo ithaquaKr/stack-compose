@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="400px" height=auto src="./assets/logo.png" />
+    <img src="./assets/logo.png" />
 </p>
 
 # The Application stack in docker-compose Library
