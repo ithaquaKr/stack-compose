@@ -1,18 +1,16 @@
 version: "3.7"
 
 services:
-  redis_mater_1:
+  redis_master_1:
     build:
-      context: dockerfiles/
+      context: dockerfiles/redis/
       args:
         REDIS_VERSION: ${REDIS_VERSION}
-    # TODO:     command: /run.sh --logfile /opt/bitnami/redis/logs/redis.log --appendonly yes --save "" --appendfsync no
     command: /run.sh
     volumes:
-      # TODO: bitnami data, log, and config path can dynamic from bitmami env
-      - "./redis/log/redis_1/:/opt/bitnami/redis/logs"
-      - "./redis/data/redis_1/:/opt/bitnami/redis/data"
-      - "./redis/config/redis.conf:/opt/bitnami/redis/mounted-etc/redis.conf:ro"
+      - "./log/redis_1/:/opt/bitnami/redis/logs"
+      - "./data/redis_1/:/opt/bitnami/redis/data"
+      - "./configs/redis_1/redis.conf:/opt/bitnami/redis/mounted-etc/redis.conf:ro"
     ports:
       - "6380:6379"
     networks:
@@ -20,16 +18,92 @@ services:
     environment:
       # ALLOW_EMPTY_PASSWORD is recommended only for development
       - ALLOW_EMPTY_PASSWORD=yes
-      # TZ Config ?
-      - TZ=Asia/Ho_Chi_Minh
     restart: unless-stopped
 
-# Network config static ip, can dynamic ip by remove ipam.
+  redis_master_2:
+    build:
+      context: dockerfiles/redis/
+      args:
+        REDIS_VERSION: ${REDIS_VERSION}
+    command: /run.sh
+    volumes:
+      - "./log/redis_2/:/opt/bitnami/redis/logs"
+      - "./data/redis_2/:/opt/bitnami/redis/data"
+      - "./configs/redis_2/redis.conf:/opt/bitnami/redis/mounted-etc/redis.conf:ro"
+    ports:
+      - "6381:6379"
+    networks:
+      - redis-sentinel
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    restart: unless-stopped
+
+  redis_master_3:
+    build:
+      context: dockerfiles/redis/
+      args:
+        REDIS_VERSION: ${REDIS_VERSION}
+    command: /run.sh
+    volumes:
+      - "./log/redis_3/:/opt/bitnami/redis/logs"
+      - "./data/redis_3/:/opt/bitnami/redis/data"
+      - "./configs/redis_3/redis.conf:/opt/bitnami/redis/mounted-etc/redis.conf:ro"
+    ports:
+      - "6382:6379"
+    networks:
+      - redis-sentinel
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - TZ=${TZ}
+    restart: unless-stopped
+
+  redis_sentinel_1:
+    build:
+      context: dockerfiles/sentinel/
+      args:
+        REDIS_VERSION: ${REDIS_VERSION}
+    volumes:
+      - "./log/sentinel_1/:/opt/bitnami/redis-sentinel/logs"
+      - "./data/sentinel_1/:/opt/bitnami/redis-sentinel/data"
+      - "./config/sentinel_1/sentinel.conf:/opt/bitnami/redis-sentinel/mounted-etc/sentinel.conf:ro"
+    ports:
+      - "26380:26379"
+    networks:
+      - redis-sentinel
+    restart: unless-stopped
+
+  redis_sentinel_2:
+    build:
+      context: dockerfiles/sentinel/
+      args:
+        REDIS_VERSION: ${REDIS_VERSION}
+    volumes:
+      - "./log/sentinel_2/:/opt/bitnami/redis-sentinel/logs"
+      - "./data/sentinel_2/:/opt/bitnami/redis-sentinel/data"
+      - "./config/sentinel_2/sentinel.conf:/opt/bitnami/redis/mounted-etc/sentinel.conf:ro"
+    ports:
+      - "26381:26379"
+    networks:
+      - redis-sentinel
+    restart: unless-stopped
+
+  redis_sentinel_3:
+    build:
+      context: dockerfiles/sentinel/
+      args:
+        REDIS_VERSION: ${REDIS_VERSION}
+    volumes:
+      - "./log/sentinel_3/:/opt/bitnami/redis-sentinel/logs"
+      - "./data/sentinel_3/:/opt/bitnami/redis-sentinel/data"
+      - "./config/sentinel_3/sentinel.conf:/opt/bitnami/redis-sentinel/mounted-etc/sentinel.conf:ro"
+    ports:
+      - "26382:26379"
+    networks:
+      - redis-sentinel
+    restart: unless-stopped
+
+# Network configs
 networks:
   redis-sentinel:
     driver: bridge
     name: redis-sentinel
-    ipam:
-      config:
-        - subnet: 172.30.0.0/1
-          gateway: 172.30.0.1
