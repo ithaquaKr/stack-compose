@@ -23,7 +23,7 @@ NC := \033[0m # No Color
         logging-enable logging-disable test lint
 
 help: ## Display this help message
-	@echo "Redis Sentinel Cluster Management Tool"
+	@echo "Redis Sentinel cluster management Tool"
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"

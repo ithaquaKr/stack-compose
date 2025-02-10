@@ -6,17 +6,25 @@ x-redis-common: &redis-common
     - redis-net
   env_file: .env
 
+x-sentinel-common: &sentinel-common
+  image: ${SENTINEL_IMAGE}
+  networks:
+    - redis-net
+  env_file: .env
+
 services:
   redis-master:
     <<: *redis-common
     container_name: redis-master
-    command: redis-server /usr/local/etc/redis/redis.conf
+    command: /run.sh
     volumes:
-      - ./config/redis/master.conf:/usr/local/etc/redis/redis.conf
-      - redis-master-data:/data
+      - ./config/redis/master.conf:/opt/bitnami/redis/mountd-etc/redis.conf
+      - redis-master-data:/bitnami/redis/data
+      - redis-master-log:/opt/bitnami/redis/logs
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
     environment:
+      - ALLOW_EMPTY_PASSWORD=yes # TODO: Remove this, add authentication for production environment
       - REDIS_PORT=${REDIS_PORT}
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -27,9 +35,10 @@ services:
   redis-replica:
     <<: *redis-common
     volumes:
-      - ./config/redis/replica.conf:/usr/local/etc/redis/redis.conf
+      - ./config/redis/replica.conf:/opt/bitnami/redis/mountd-etc/redis.conf
       - redis-replica-data:/data
-    command: redis-server /usr/local/etc/redis/redis.conf
+      - redis-replica-log:/opt/bitnami/redis/logs
+    command: /run.sh
     depends_on:
       redis-master:
         condition: service_healthy
@@ -38,20 +47,21 @@ services:
     ports:
       - "${REDIS_REPLICA_START_PORT}-${REDIS_REPLICA_END_PORT}:${REDIS_PORT}"
     environment:
+      - ALLOW_EMPTY_PASSWORD=yes # TODO: Remove this, add authentication for production environment
       - REDIS_PORT=${REDIS_PORT}
       - REDIS_MASTER_HOST=${REDIS_MASTER_HOST}
-      - REDIS_MASTER_PORT=${REDIS_MASTER_PORT}
+      - REDIS_MASTER_PORT=${REDIS_PORT}
 
   sentinel:
-    <<: *redis-common
+    <<: *sentinel-common
     volumes:
-      - ./config/sentinel/sentinel.conf:/usr/local/etc/redis/sentinel.conf
-    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+      - ./config/sentinel/sentinel.conf:/bitnami/redis-sentinel/sentinel.conf
+      - sentinel-log:/opt/bitnami/redis-sentinel/logs
     environment:
       - SENTINEL_PORT=${SENTINEL_PORT}
       - SENTINEL_QUORUM=${SENTINEL_QUORUM}
       - REDIS_MASTER_HOST=${REDIS_MASTER_HOST}
-      - REDIS_MASTER_PORT=${REDIS_MASTER_PORT}
+      - REDIS_MASTER_PORT=${REDIS_PORT}
       - SENTINEL_DOWN_AFTER=${SENTINEL_DOWN_AFTER}
       - SENTINEL_FAILOVER_TIMEOUT=${SENTINEL_FAILOVER_TIMEOUT}
       - SENTINEL_PARALLEL_SYNCS=${SENTINEL_PARALLEL_SYNCS}
@@ -69,4 +79,7 @@ networks:
 
 volumes:
   redis-master-data:
+  redis-master-log:
   redis-replica-data:
+  redis-replica-log:
+  sentinel-log:
