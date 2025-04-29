@@ -13,7 +13,15 @@
 ehthumbs.db
 Thumbs.db
 
+# Redis dump files
+*.rdb
+
 # Environment files
-*.env.local
-*.env.*.local
-*.env
+.env.local
+.env.*.local
+.env
+
+# Data directories
+data/*
+# Log directories
+logs/*
