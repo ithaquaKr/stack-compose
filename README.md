@@ -1,3 +1,6 @@
+> [!WARNING]
+> DEPRECATED: Move all stuff to new home: <https://github.com/ithaquaKr/homelab/tree/master>
+
 # Stack-Compose 🐳
 
 A curated collection of production-ready Docker Compose templates for popular
